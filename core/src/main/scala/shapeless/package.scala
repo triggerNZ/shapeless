@@ -38,9 +38,12 @@ package object shapeless {
   }
 
   // Type inequalities
+
   trait =:!=[A, B]
 
   implicit def neq[A, B] : A =:!= B = new =:!=[A, B] {}
+
+  @annotation.implicitAmbiguous("Could not prove ${A} =:!= ${A}")
   implicit def neqAmbig1[A] : A =:!= A = unexpected
   implicit def neqAmbig2[A] : A =:!= A = unexpected
 
