@@ -27,6 +27,59 @@ import function._
 import poly._
 
 object hlist {
+
+  trait DeepFlatten[In <: HList] extends DepFn1[In] {
+    type Out <: HList
+  }
+
+
+  trait LowPriorityDeepFlatten {
+    implicit def hconsDeepFlatten2[H, T <: HList, TO <: HList](
+      implicit tFlatten: DeepFlatten.Aux[T, TO])
+      : DeepFlatten.Aux[H :: T, H :: TO] = new DeepFlatten[H :: T] {
+        type Out = H :: TO
+
+        def apply(hl: H :: T) = {
+          val flattenedTail = tFlatten(hl.tail)
+          hl.head :: flattenedTail
+        }
+      }
+
+    }
+
+
+  object DeepFlatten extends LowPriorityDeepFlatten {
+    type Aux[In0 <: HList, Out0 <: HList] = DeepFlatten[In0] {type Out = Out0}
+
+    def apply[HL <: HList](implicit deepFlatten: DeepFlatten[HL]): Aux[HL, deepFlatten.Out] = deepFlatten
+
+
+    implicit val hnilDeepFlatten: Aux[HNil, HNil] = new DeepFlatten[HNil] {
+      type Out = HNil
+      def apply(in: HNil) = HNil
+    }
+
+    implicit def hconsDeepFlatten1[H <: HList, T <: HList, HO <: HList, TO <: HList](
+      implicit hFlatten: DeepFlatten.Aux[H, HO],
+               tFlatten: DeepFlatten.Aux[T, TO],
+               ppend: Prepend[HO, TO])
+      : Aux[H :: T, ppend.Out] = new DeepFlatten[H :: T] {
+        type Out = ppend.Out
+
+        def apply(hl: H :: T) = {
+          val flattenedHead = hFlatten(hl.head)
+          val flattenedTail = tFlatten(hl.tail)
+          val appended = ppend(flattenedHead, flattenedTail)
+          appended
+        }
+      }
+
+  }
+
+
+
+
+
   /**
    * Type class witnessing that this `HList` is composite and providing access to head and tail.
    *

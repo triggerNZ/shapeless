@@ -31,6 +31,8 @@ final class HListOps[L <: HList](l : L) extends Serializable {
   import ops.adjoin.Adjoin
   import ops.hlist._
 
+  def deepFlatten(implicit d: DeepFlatten[L]) = d(l)
+
   /**
    * Returns the head of this `HList`. Available only if there is evidence that this `HList` is composite.
    */
@@ -167,7 +169,7 @@ final class HListOps[L <: HList](l : L) extends Serializable {
    * types in `SL`.
    */
   def removeAll[SL <: HList](implicit removeAll : RemoveAll[L, SL]): removeAll.Out = removeAll(l)
-  
+
   /**
    * Returns the union between this `HList` and another `HList`. In case of duplicate types, this operation is a
    * order-preserving multi-set union. If type `T` appears n times in this `HList` and m > n times in `M`, the
@@ -175,7 +177,7 @@ final class HListOps[L <: HList](l : L) extends Serializable {
    * of type `T` in `M`.
    */
   def union[M <: HList](s: M)(implicit union: Union[L, M]): union.Out = union(l, s)
-  
+
   /**
    * Returns the intersection between this `HList` and another `HList`. In case of duplicate types, this operation is a
    * multiset intersection. If type `T` appears n times in this `HList` and m < n times in `M`, the resulting `HList`
@@ -183,7 +185,7 @@ final class HListOps[L <: HList](l : L) extends Serializable {
    * Also available if `M` contains types absent in this `HList`.
    */
   def intersect[M <: HList](implicit intersection: Intersection[L, M]): intersection.Out = intersection(l)
-  
+
   /**
    * Returns the difference between this `HList` and another `HList`. In case of duplicate types, this operation is a
    * multiset difference. If type `T` appears n times in this `HList` and m < n times in `M`, the resulting `HList`
@@ -191,7 +193,7 @@ final class HListOps[L <: HList](l : L) extends Serializable {
    * Also available if `M` contains types absent in this `HList`.
    */
   def diff[M <: HList](implicit diff: Diff[L, M]): diff.Out = diff(l)
-  
+
   /**
    * Reinserts an element `U` into this `HList` to return another `HList` `O`.
    */
@@ -689,7 +691,7 @@ final class HListOps[L <: HList](l : L) extends Serializable {
 
   /**
    * Finds the first element of the HList for which the given Poly is defined, and applies the Poly to it.
-   */ 
+   */
   def collectFirst[P <: Poly](p: P)(implicit collect: CollectFirst[L, p.type]): collect.Out = collect(l)
 
   /**
